@@ -1,0 +1,43 @@
+﻿
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Generated datasets and embeddings
+data/raw/*
+data/processed/*
+!data/processed/.gitkeep
+data/processed/embeddings/
+data/processed/subset_embeddings/
+
+# Qdrant local storage
+qdrant_storage/
+storage/
+
+# Hugging Face cache
+.cache/
+.cache/huggingface/
+**/.cache/huggingface/
+
+# Logs
+*.log
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
