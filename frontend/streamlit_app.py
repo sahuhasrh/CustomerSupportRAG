@@ -31,7 +31,7 @@ with st.sidebar:
 
     st.markdown("**Technology stack**")
     st.write(
-        "- Sentence Transformers\n"
+        "- FastEmbed (ONNX embeddings)\n"
         "- Qdrant vector database\n"
         "- LangGraph and LangChain\n"
         "- Groq LLM\n"
