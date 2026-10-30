@@ -5,8 +5,17 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from app.rag.graph import answer_question
+import logging
+import uuid
 
+from fastapi import Request
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+
+logger = logging.getLogger("customer_support_rag")
 app = FastAPI(
     title="Customer Support RAG API",
     description=(
@@ -15,6 +24,7 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+
 
 
 class ChatRequest(BaseModel):
@@ -59,9 +69,14 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
+    request_id = str(uuid.uuid4())[:8]
     question = request.question.strip()
 
     if not question:
+        logger.warning(
+            "request_id=%s | Empty question received",
+            request_id,
+        )
         raise HTTPException(
             status_code=422,
             detail="Question must not be empty.",
@@ -69,18 +84,41 @@ def chat(request: ChatRequest):
 
     start = perf_counter()
 
+    logger.info(
+        "request_id=%s | Chat request received",
+        request_id,
+    )
+
     try:
         result = answer_question(question)
+
     except ValueError as exc:
+        logger.warning(
+            "request_id=%s | Validation error: %s",
+            request_id,
+            str(exc),
+        )
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except Exception as exc:
-        # Avoid returning API keys or internal exception details to clients.
+
+    except Exception:
+        logger.exception(
+            "request_id=%s | Chat processing failed",
+            request_id,
+        )
         raise HTTPException(
             status_code=500,
             detail="The chatbot could not process your question. Please try again.",
-        ) from exc
+        )
 
     elapsed_ms = (perf_counter() - start) * 1000
+
+    logger.info(
+        "request_id=%s | relevant=%s | retrieved_faqs=%d | processing_time_ms=%.2f",
+        request_id,
+        result["relevant"],
+        len(result["retrieved_faqs"]),
+        elapsed_ms,
+    )
 
     return {
         "question": result["question"],
