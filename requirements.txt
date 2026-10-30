@@ -8,7 +8,7 @@ langchain-qdrant>=1.0,<2.0
 langgraph>=1.0,<2.0
 
 # Embeddings and vector database
-sentence-transformers>=5.0,<6.0
+fastembed>=0.7,<1.0
 qdrant-client>=1.15,<2.0
 
 # Backend

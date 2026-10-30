@@ -3,9 +3,7 @@ import os
 from functools import lru_cache
 
 from qdrant_client import QdrantClient
-from sentence_transformers import SentenceTransformer
-
-
+from fastembed import TextEmbedding
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 QDRANT_URL = os.getenv("QDRANT_URL", "http://127.0.0.1:6333")
 COLLECTION_NAME = os.getenv(
@@ -15,13 +13,18 @@ COLLECTION_NAME = os.getenv(
 
 
 @lru_cache(maxsize=1)
-def get_embedding_model() -> SentenceTransformer:
-    return SentenceTransformer(MODEL_NAME, device="cpu")
-
+def get_embedding_model() -> TextEmbedding:
+    return TextEmbedding(model_name=MODEL_NAME)
 
 @lru_cache(maxsize=1)
 def get_qdrant_client() -> QdrantClient:
-    client = QdrantClient(url=QDRANT_URL, timeout=30)
+    api_key = os.getenv("QDRANT_API_KEY")
+
+    client = QdrantClient(
+        url=QDRANT_URL,
+        api_key=api_key,
+        timeout=30
+    )
 
     if not client.collection_exists(COLLECTION_NAME):
         client.close()
@@ -30,8 +33,6 @@ def get_qdrant_client() -> QdrantClient:
         )
 
     return client
-
-
 def retrieve_faqs(
     question: str,
     top_k: int = 5,
@@ -48,15 +49,10 @@ def retrieve_faqs(
     model = get_embedding_model()
     client = get_qdrant_client()
 
-    vector = model.encode(
-        question,
-        convert_to_numpy=True,
-        normalize_embeddings=True,
-    )
-
+    vector = list(model.embed([question]))[0].tolist()
     result = client.query_points(
         collection_name=COLLECTION_NAME,
-        query=vector.tolist(),
+        query=vector,
         limit=top_k,
         with_payload=True,
         with_vectors=False,
