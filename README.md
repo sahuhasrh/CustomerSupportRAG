@@ -4,7 +4,7 @@ An AI-powered customer support chatbot that retrieves relevant FAQ entries using
 
 ## Live Application
 
-- **Frontend:** Replace this line with your Streamlit Community Cloud URL.
+- **Frontend:** https://customersupportrag-nzuyzkj6hj6dg5fw6lrh8a.streamlit.app/
 - **Backend API:** https://customer-support-rag-api.onrender.com
 - **API documentation (Swagger):** https://customer-support-rag-api.onrender.com/docs
 - **Health check:** https://customer-support-rag-api.onrender.com/health
